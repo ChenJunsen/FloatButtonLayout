@@ -321,7 +321,7 @@ public class FloatButtonLayout extends FrameLayout {
             }
             if (isTop) {
                 if (isInTop) {
-                    layoutTop = statusBarHeight;
+                    layoutTop = 0;
                     layoutBottom = layoutTop + v.getMeasuredHeight();
                 }
             }
