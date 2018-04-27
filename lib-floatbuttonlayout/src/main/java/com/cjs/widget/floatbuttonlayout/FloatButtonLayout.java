@@ -17,8 +17,8 @@ import android.widget.FrameLayout;
 
 /**
  * 描述:悬浮按钮布局<br>
- *     <li>支持三星s系列手机手动开启隐藏导航栏适配
- *     <li>支持页面全屏非全屏适配
+ * <li>支持三星s系列手机手动开启隐藏导航栏适配
+ * <li>支持页面全屏非全屏适配
  * <p>
  * 作者:陈俊森
  * 创建时间:2018年04月26日 15:59
@@ -68,7 +68,7 @@ public class FloatButtonLayout extends FrameLayout {
      */
     private Activity mActivity;
 
-    private int statusBarHeight, deviceHeight, deviceWidth;
+    private int statusBarHeight, layoutHeight, layoutWidth;
 
     public FloatButtonLayout(@NonNull Context context) {
         super(context);
@@ -165,14 +165,20 @@ public class FloatButtonLayout extends FrameLayout {
         array.recycle();
     }
 
+    private void resetLayoutDimension() {
+        statusBarHeight = Tools.getScreenStatusBarHeight(mActivity);
+//            LogKit.i("statusBar", "状态栏高度:" + statusBarHeight);
+        int screenHeight = Tools.getDeviceScreenHeight(mActivity);
+        int screenWidth = Tools.getDeviceScreenWidth(mActivity);
+        layoutHeight = getHeight() > screenHeight ? screenHeight : getHeight();
+        layoutWidth = getWidth() > screenWidth ? screenWidth : getWidth();
+
+    }
+
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
-        statusBarHeight = Tools.getScreenStatusBarHeight(mActivity);
-//            LogKit.i("statusBar", "状态栏高度:" + statusBarHeight);
-        deviceHeight = Tools.getDeviceScreenHeight(mActivity);
-        deviceWidth = Tools.getDeviceScreenWidth(mActivity);
-
+        resetLayoutDimension();
         int childCount = getChildCount();
         if (childCount == 0) {
             Button floatButton = new Button(getContext());
@@ -184,7 +190,6 @@ public class FloatButtonLayout extends FrameLayout {
             floatView = getChildAt(childCount - 1);
         }
         floatView.setOnTouchListener(new FloatViewTouchListener(mActivity));
-
     }
 
     @Override
@@ -194,9 +199,10 @@ public class FloatButtonLayout extends FrameLayout {
         Log.d("fbl", "父布局getTop:" + getTop() + " 父布局getLeft:" + getLeft() + " 父布局getBottom:" + getBottom() + " 父布局getRight:" + getRight());
         Log.d("fbl", "底部导航栏是否存在:" + Tools.isBottomNavigationBarExists(mActivity));
         Log.d("fbl","statusbarHeight:"+statusBarHeight);
-        Log.d("fbl","deviceHeight:"+deviceHeight);
-        Log.d("fbl","deviceWidth:"+deviceWidth);
+        Log.d("fbl","layoutHeight:"+layoutHeight);
+        Log.d("fbl","layoutWidth:"+layoutWidth);
         Log.d("fbl","getHeight:"+getHeight()+"   getWidth:"+getWidth());*/
+        resetLayoutDimension();
     }
 
     /**
@@ -241,12 +247,12 @@ public class FloatButtonLayout extends FrameLayout {
                     float layoutBottom = layoutTop + v.getMeasuredHeight();
                     float layoutRight = layoutLeft + v.getMeasuredWidth();
                     if (!isAllowMoveBeyondScreen) {
-                        if (layoutBottom > getHeight()) {
-                            layoutBottom = getHeight();
+                        if (layoutBottom > layoutHeight) {
+                            layoutBottom = layoutHeight;
                             layoutTop = layoutBottom - v.getMeasuredHeight();
                         }
-                        if (layoutRight > getWidth()) {
-                            layoutRight = getWidth();
+                        if (layoutRight > layoutWidth) {
+                            layoutRight = layoutWidth;
                             layoutLeft = layoutRight - v.getMeasuredWidth();
                         }
                     }
@@ -302,10 +308,10 @@ public class FloatButtonLayout extends FrameLayout {
             boolean isTop = (direction & SuckScreenDirection.TOP) == SuckScreenDirection.TOP;
             boolean isBottom = (direction & SuckScreenDirection.BOTTOM) == SuckScreenDirection.BOTTOM;
 
-            boolean isInLeft = centerVx <= deviceWidth / 2;
-            boolean isInRight = centerVx > deviceWidth / 2;
-            boolean isInTop = centerVy <= deviceHeight / 2;
-            boolean isInBottom = centerVy > deviceHeight / 2;
+            boolean isInLeft = centerVx <= layoutWidth / 2;
+            boolean isInRight = centerVx > layoutWidth / 2;
+            boolean isInTop = centerVy <= layoutHeight / 2;
+            boolean isInBottom = centerVy > layoutHeight / 2;
 
             if (isStart) {
                 if (isInLeft) {
@@ -315,7 +321,7 @@ public class FloatButtonLayout extends FrameLayout {
             }
             if (isEnd) {
                 if (isInRight) {
-                    layoutRight = deviceWidth;
+                    layoutRight = layoutWidth;
                     layoutLeft = layoutRight - v.getMeasuredWidth();
                 }
             }
@@ -327,7 +333,7 @@ public class FloatButtonLayout extends FrameLayout {
             }
             if (isBottom) {
                 if (isInBottom) {
-                    layoutBottom = deviceHeight;
+                    layoutBottom = layoutHeight;
                     layoutTop = layoutBottom - v.getMeasuredHeight();
                 }
             }
